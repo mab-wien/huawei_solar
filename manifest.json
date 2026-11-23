@@ -8,13 +8,13 @@
     "documentation": "https://github.com/wlcrs/huawei_solar/wiki",
     "issue_tracker": "https://github.com/wlcrs/huawei_solar/issues",
     "requirements": [
-        "huawei-solar==3.2.4"
+        "huawei-solar @ file:///config/wheels/huawei_solar-3.2.4.post2+smartload-py3-none-any.whl#sha256=7ed8b507901db90422e88dea7f74ecf11bb7841e9153d8ad7c1390ab71a7e686"
     ],
     "codeowners": [
         "@wlcrs"
     ],
     "iot_class": "local_polling",
-    "version": "2.3.4",
+    "version": "2.3.4+smartload",
     "loggers": [
         "huawei_solar",
         "tmodbus"

@@ -1,0 +1,46 @@
+# Testinstallation SmartLoad (nur Test, nicht für Upstream)
+
+Dieser Branch (`smartload-test`) ist `smartload-device` plus **eine** Teständerung in `manifest.json`:
+Statt der Upstream-Abhängigkeit `huawei-solar==3.2.4` wird ein lokal gebautes Wheel der Bibliothek
+mit fester Revision installiert. Upstream bleibt unverändert: Der PR-Branch `smartload-device`
+verlangt weiterhin `huawei-solar==3.2.4`; nach einem Bibliotheks-Release mit SmartLoad hebt der
+Maintainer die Version dort an.
+
+## Feste Revisionen
+
+| Teil | Branch | Commit |
+|---|---|---|
+| Bibliothek (PR) | `huawei-solar-lib` `smartload-device` | `2dbde77` |
+| Bibliothek (Test-Wheel) | `huawei-solar-lib` `smartload-test` | `0179af802cd486a8ed285ad5f5b680ef62ad575b` (= `2dbde77` + feste Version `3.2.4.post2+smartload`) |
+| Integration (PR) | `huawei_solar` `smartload-device` | siehe `git log` (Basis `d8b0120`) |
+
+Wheel: `huawei_solar-3.2.4.post2+smartload-py3-none-any.whl`,
+SHA-256 `7ed8b507901db90422e88dea7f74ecf11bb7841e9153d8ad7c1390ab71a7e686`
+(reproduzierbar: zweimal gebaut, gleiche Prüfsumme). Die Prüfsumme steht auch in `manifest.json`;
+HA bricht die Installation ab, wenn das Wheel abweicht.
+
+Wheel neu bauen:
+```
+git -C huawei-solar-lib archive --format=tar --prefix=src/ 0179af802cd486a8ed285ad5f5b680ef62ad575b | tar -x -C /tmp/hsl
+pip wheel --no-deps -w /tmp/hsl/out /tmp/hsl/src
+sha256sum /tmp/hsl/out/*.whl
+```
+
+## Installation (HA)
+
+1. Sicherung: `cp -a /config/custom_components/huawei_solar /config/huawei_solar.bak`
+2. Wheel nach `/config/wheels/` kopieren (Dateiname unverändert).
+3. Inhalt dieses Branches nach `/config/custom_components/huawei_solar/` kopieren.
+4. HA neu starten. HA installiert das Wheel, weil die Abhängigkeit eine Datei-URL ist.
+5. Prüfen: `docker exec homeassistant pip show huawei-solar` → `Version: 3.2.4.post2+smartload`.
+6. Slave-ID der SmartLoad (EMMA-Geräteliste, z. B. 38) unter „Neu konfigurieren“ ergänzen.
+
+## Zurück zur regulären Version
+
+1. Bei der Integration die SmartLoad-Slave-ID wieder entfernen (sonst schlägt die Erkennung mit der
+   regulären Bibliothek fehl).
+2. `cp -a /config/huawei_solar.bak/. /config/custom_components/huawei_solar/`
+   oder in HACS beim offiziellen Eintrag „Erneut installieren“.
+3. HA neu starten. `huawei-solar==3.2.4` ist dann nicht erfüllt (`3.2.4.post2+smartload` installiert),
+   HA installiert die reguläre Bibliothek 3.2.4 automatisch.
+4. `/config/wheels/huawei_solar-3.2.4.post2+smartload-py3-none-any.whl` löschen.
