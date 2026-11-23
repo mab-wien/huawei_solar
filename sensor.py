@@ -71,7 +71,7 @@ class HuaweiSolarSensorEntityDescription(
 ):
     """Huawei Solar Sensor Entity."""
 
-    value_conversion_function: Callable[[Any], str] | None = None
+    value_conversion_function: Callable[[Any], str | None] | None = None
 
     def __post_init__(self) -> None:
         """Defaults the translation_key to the sensor key."""
@@ -2260,13 +2260,27 @@ SMARTLOGGER_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] 
 )
 
 
+def _smartload_on_off(value: bool | None) -> str | None:
+    """Convert a SmartLoad on/off register. None (invalid value 65535) stays unknown."""
+    if value is None:
+        return None
+    return "on" if value else "off"
+
+
+def _smartload_off_grid_mode(value: rv.SmartLoadOffGridMode | None) -> str | None:
+    """Convert the SmartLoad off-grid mode. None (invalid value 65535) stays unknown."""
+    if value is None:
+        return None
+    return value.name.lower()
+
+
 SMARTLOAD_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] = (
     HuaweiSolarSensorEntityDescription(
         key=rn.SMARTLOAD_SWITCH_STATUS,
         icon="mdi:electric-switch",
         device_class=SensorDeviceClass.ENUM,
         options=["off", "on"],
-        value_conversion_function=lambda value: "on" if value else "off",
+        value_conversion_function=_smartload_on_off,
     ),
     HuaweiSolarSensorEntityDescription(
         key=rn.SMARTLOAD_RATED_POWER,
@@ -2285,7 +2299,7 @@ SMARTLOAD_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] = 
         icon="mdi:transmission-tower-off",
         device_class=SensorDeviceClass.ENUM,
         options=["off", "on"],
-        value_conversion_function=lambda value: "on" if value else "off",
+        value_conversion_function=_smartload_on_off,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HuaweiSolarSensorEntityDescription(
@@ -2293,7 +2307,7 @@ SMARTLOAD_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] = 
         icon="mdi:transmission-tower-off",
         device_class=SensorDeviceClass.ENUM,
         options=["basic", "battery"],
-        value_conversion_function=lambda value: value.name.lower(),
+        value_conversion_function=_smartload_off_grid_mode,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     HuaweiSolarSensorEntityDescription(
