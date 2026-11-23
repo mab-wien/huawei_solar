@@ -28,6 +28,7 @@ from huawei_solar import (
     SDongleDevice,
     SmartAcGunDevice,
     SmartGuardDevice,
+    SmartLoadDevice,
     SmartLoggerDevice,
     SUN2000Device,
     create_device_instance,
@@ -663,6 +664,7 @@ DEVICE_CLASS_TO_TRANSLATION_KEY: dict[type[HuaweiSolarDevice], str] = {
     SDongleDevice: "sdongle",
     SmartAcGunDevice: "charger_connector",
     SmartGuardDevice: "smartguard",
+    SmartLoadDevice: "smartload",
     SmartLoggerDevice: "smartlogger",
 }
 
@@ -703,14 +705,20 @@ async def _setup_device_data(
     else:
         sw_version = getattr(device, "software_version", None)
 
+        # A SmartLoad carries the name given to it in the FusionSolar app
+        app_name = device.name if isinstance(device, SmartLoadDevice) else None
+        name_kwargs: dict[str, str] = (
+            {"name": app_name} if app_name else {"translation_key": translation_key}
+        )
+
         device_info = DeviceInfo(
             identifiers={(DOMAIN, device.serial_number)},
-            translation_key=translation_key,
             manufacturer="Huawei",
             model=device.model_name,
             serial_number=device.serial_number,
             sw_version=sw_version,
             via_device_id=via_device_id,
+            **name_kwargs,
         )
 
         # Add device to device registery
@@ -718,7 +726,7 @@ async def _setup_device_data(
             config_entry_id=entry.entry_id,
             identifiers={(DOMAIN, device.serial_number)},
             manufacturer="Huawei",
-            name=device.model_name,
+            name=app_name or device.model_name,
             model=device.model_name,
             sw_version=sw_version,
             via_device_id=via_device_id,

@@ -11,6 +11,7 @@ from huawei_solar import (
     SChargerDevice,
     SDongleDevice,
     SmartAcGunDevice,
+    SmartLoadDevice,
     SmartLoggerDevice,
     register_names as rn,
     register_values as rv,
@@ -2259,6 +2260,57 @@ SMARTLOGGER_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] 
 )
 
 
+SMARTLOAD_SENSOR_DESCRIPTIONS: tuple[HuaweiSolarSensorEntityDescription, ...] = (
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_SWITCH_STATUS,
+        icon="mdi:electric-switch",
+        device_class=SensorDeviceClass.ENUM,
+        options=["off", "on"],
+        value_conversion_function=lambda value: "on" if value else "off",
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_RATED_POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_MIN_SWITCHING_INTERVAL,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        device_class=SensorDeviceClass.DURATION,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_OFF_GRID_AUTO_CONTROL,
+        icon="mdi:transmission-tower-off",
+        device_class=SensorDeviceClass.ENUM,
+        options=["off", "on"],
+        value_conversion_function=lambda value: "on" if value else "off",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_OFF_GRID_MODE,
+        icon="mdi:transmission-tower-off",
+        device_class=SensorDeviceClass.ENUM,
+        options=["basic", "battery"],
+        value_conversion_function=lambda value: value.name.lower(),
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_OFF_GRID_RESUME_SOC,
+        icon="mdi:battery-arrow-up",
+        native_unit_of_measurement=PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    HuaweiSolarSensorEntityDescription(
+        key=rn.SMARTLOAD_OFF_GRID_STOP_SOC,
+        icon="mdi:battery-arrow-down",
+        native_unit_of_measurement=PERCENTAGE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+
 def create_charger_entities(
     ucs: HuaweiSolarDeviceData,
 ) -> list["HuaweiSolarSensorEntity"]:
@@ -2284,6 +2336,20 @@ def create_smart_ac_gun_entities(
             ucs.update_coordinator, entity_description, ucs.device_info
         )
         for entity_description in SMART_AC_GUN_SENSOR_DESCRIPTIONS
+    ]
+
+
+def create_smartload_entities(
+    ucs: HuaweiSolarDeviceData,
+) -> list["HuaweiSolarSensorEntity"]:
+    """Create SmartLoad sensor entities."""
+    assert isinstance(ucs.device, SmartLoadDevice)
+
+    return [
+        HuaweiSolarSensorEntity(
+            ucs.update_coordinator, entity_description, ucs.device_info
+        )
+        for entity_description in SMARTLOAD_SENSOR_DESCRIPTIONS
     ]
 
 
@@ -2518,6 +2584,8 @@ async def async_setup_entry(
             entities_to_add.extend(create_charger_entities(ucs))
         elif isinstance(ucs.device, SmartAcGunDevice):
             entities_to_add.extend(create_smart_ac_gun_entities(ucs))
+        elif isinstance(ucs.device, SmartLoadDevice):
+            entities_to_add.extend(create_smartload_entities(ucs))
         elif isinstance(ucs.device, SDongleDevice):
             entities_to_add.extend(create_sdongle_entities(ucs))
         elif isinstance(ucs.device, MeterDevice):
