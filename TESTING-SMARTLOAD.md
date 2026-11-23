@@ -46,7 +46,13 @@ sha256sum /tmp/hsl/out/*.whl
    (prüfen: `grep huawei-solar /config/custom_components/huawei_solar/manifest.json` zeigt
    `huawei-solar==…`). Ist bereits eine Testversion installiert, keine neue Sicherung anlegen und
    für den Rückweg HACS „Erneut installieren“ beim offiziellen Eintrag verwenden.
-2. Wheel nach `/config/wheels/` kopieren (Dateiname unverändert).
+2. Wheel nach `/config/wheels/` laden und prüfen (Dateiname unverändert):
+   ```
+   mkdir -p /config/wheels
+   wget -O "/config/wheels/huawei_solar-3.2.4.post2+smartload-py3-none-any.whl" \
+     "https://github.com/mab-wien/huawei-solar-lib/releases/download/smartload-test-0179af8/huawei_solar-3.2.4.post2%2Bsmartload-py3-none-any.whl"
+   sha256sum /config/wheels/huawei_solar-3.2.4.post2+smartload-py3-none-any.whl
+   ```
 3. Inhalt dieses Branches nach `/config/custom_components/huawei_solar/` kopieren.
 4. HA neu starten. HA installiert das Wheel, weil die Abhängigkeit eine Datei-URL ist.
 5. Prüfen: `docker exec homeassistant pip show huawei-solar` → `Version: 3.2.4.post2+smartload`.
