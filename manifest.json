@@ -8,7 +8,7 @@
     "documentation": "https://github.com/wlcrs/huawei_solar/wiki",
     "issue_tracker": "https://github.com/wlcrs/huawei_solar/issues",
     "requirements": [
-        "huawei-solar @ file:///config/wheels/huawei_solar-3.2.4.post2+smartload-py3-none-any.whl#sha256=7ed8b507901db90422e88dea7f74ecf11bb7841e9153d8ad7c1390ab71a7e686"
+        "huawei-solar @ file:///config/wheels/huawei_solar-3.2.4.post3+smartload-py3-none-any.whl#sha256=0d9f0094aac227c58933ef198af08e831141ffa0df4308159b4e2607799058e8"
     ],
     "codeowners": [
         "@wlcrs"
